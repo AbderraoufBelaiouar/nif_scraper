@@ -18,7 +18,15 @@ AUTH_URLS = [
     "https://nifenligne.mf.gov.dz/nif.asp",
 ]
 
-PROXY = os.environ.get('PROXY') or os.environ.get('HTTP_PROXY')
+SCRAPINGANT_API_KEY = os.environ.get('SCRAPINGANT_API_KEY', '')
+
+def get_proxy():
+    if not SCRAPINGANT_API_KEY:
+        return None
+    return {
+        'http': f'http://scrapingant:{SCRAPINGANT_API_KEY}@proxy.scrapingant.com:8080',
+        'https': f'http://scrapingant:{SCRAPINGANT_API_KEY}@proxy.scrapingant.com:8080',
+    }
 
 
 def check_nif(nif_number: str) -> dict:
@@ -28,12 +36,7 @@ def check_nif(nif_number: str) -> dict:
     """
     session = requests.Session()
 
-    proxies = None
-    if PROXY:
-        proxies = {
-            'http': PROXY,
-            'https': PROXY,
-        }
+    proxies = get_proxy()
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
