@@ -89,13 +89,21 @@ railway up
 
 ## Option 4: Render (Free)
 
-1. Push code to GitHub
+1. Push code to GitHub (need `requirements.txt` and `api.py`)
 2. Go to https://dashboard.render.com
 3. **New** → **Web Service**
 4. Connect GitHub repo
 5. Configure:
-   - Build command: `pip install -r requirements-api.txt` (create one)
-   - Start command: `python3 api.py`
+   - **Build command**: (leave empty - uses requirements.txt automatically)
+   - **Start command**: `gunicorn -w 4 -b 0.0.0.0:$PORT api:app`
+
+**Make sure `requirements.txt` exists in your repo** with:
+```
+requests
+beautifulsoup4
+flask
+gunicorn
+```
 
 ---
 
