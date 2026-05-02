@@ -6,9 +6,17 @@ Usage: python api.py (local) or gunicorn -w 4 -b 0.0.0.0:$PORT api:app (producti
 
 import os
 from flask import Flask, request, jsonify
-from nif_checker import check_nif
+from nif_checker import check_nif, SCRAPINGANT_API_KEY
 
 app = Flask(__name__)
+
+
+@app.route('/debug', methods=['GET'])
+def debug():
+    return jsonify({
+        'api_key_set': bool(SCRAPINGANT_API_KEY),
+        'api_key_prefix': SCRAPINGANT_API_KEY[:8] + '...' if SCRAPINGANT_API_KEY else '',
+    })
 
 
 @app.route('/health', methods=['GET'])

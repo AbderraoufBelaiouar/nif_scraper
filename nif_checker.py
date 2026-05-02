@@ -22,7 +22,9 @@ SCRAPINGANT_API_KEY = os.environ.get('SCRAPINGANT_API_KEY', '')
 
 def get_proxy():
     if not SCRAPINGANT_API_KEY:
+        print("DEBUG: No SCRAPINGANT_API_KEY found")
         return None
+    print(f"DEBUG: Using proxy with key prefix: {SCRAPINGANT_API_KEY[:8]}...")
     return {
         'http': f'http://scrapingant:{SCRAPINGANT_API_KEY}@proxy.scrapingant.com:8080',
         'https': f'http://scrapingant:{SCRAPINGANT_API_KEY}@proxy.scrapingant.com:8080',
@@ -50,11 +52,14 @@ def check_nif(nif_number: str) -> dict:
     for url in AUTH_URLS:
         tried_urls.append(url)
         try:
+            print(f"DEBUG: Trying {url} with proxies: {proxies is not None}")
             resp = session.get(url, headers=headers, timeout=30, verify=False, proxies=proxies)
+            print(f"DEBUG: Got response {resp.status_code}")
             if resp.status_code == 200:
                 response = resp
                 break
         except Exception as e:
+            print(f"DEBUG: Error - {type(e).__name__}: {e}")
             continue
     
     if not response or response.status_code != 200:
