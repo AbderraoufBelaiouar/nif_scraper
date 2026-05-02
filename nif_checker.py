@@ -4,6 +4,7 @@ NIF Checker - Check Algerian Tax Identification Number
 Usage: python nif_checker.py <NIF_NUMBER>
 """
 
+import os
 import sys
 import argparse
 import warnings
@@ -17,6 +18,8 @@ AUTH_URLS = [
     "https://nifenligne.mf.gov.dz/nif.asp",
 ]
 
+PROXY = os.environ.get('PROXY') or os.environ.get('HTTP_PROXY')
+
 
 def check_nif(nif_number: str) -> dict:
     """
@@ -24,7 +27,14 @@ def check_nif(nif_number: str) -> dict:
     Returns a dict with the result.
     """
     session = requests.Session()
-    
+
+    proxies = None
+    if PROXY:
+        proxies = {
+            'http': PROXY,
+            'https': PROXY,
+        }
+
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -37,7 +47,7 @@ def check_nif(nif_number: str) -> dict:
     for url in AUTH_URLS:
         tried_urls.append(url)
         try:
-            resp = session.get(url, headers=headers, timeout=30, verify=False)
+            resp = session.get(url, headers=headers, timeout=30, verify=False, proxies=proxies)
             if resp.status_code == 200:
                 response = resp
                 break
@@ -63,7 +73,7 @@ def check_nif(nif_number: str) -> dict:
                     form_url = href if href.startswith('http') else BASE_URL.rstrip('/') + '/' + href
                     if form_url not in tried_urls:
                         tried_urls.append(form_url)
-                        resp = session.get(form_url, headers=headers, timeout=30, verify=False)
+                        resp = session.get(form_url, headers=headers, timeout=30, verify=False, proxies=proxies)
                         soup = BeautifulSoup(resp.text, 'html.parser')
                         form = soup.find('form')
                         if form:
@@ -98,9 +108,9 @@ def check_nif(nif_number: str) -> dict:
     submit_url = form_action if form_action.startswith('http') else BASE_URL + '/nif.asp'
     
     if form_method == 'GET':
-        response = session.get(submit_url, params=inputs, headers=headers, timeout=30, verify=False)
+        response = session.get(submit_url, params=inputs, headers=headers, timeout=30, verify=False, proxies=proxies)
     else:
-        response = session.post(submit_url, data=inputs, headers=headers, timeout=30, verify=False)
+        response = session.post(submit_url, data=inputs, headers=headers, timeout=30, verify=False, proxies=proxies)
     
     return parse_response(response.text, nif_number)
 
